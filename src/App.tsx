@@ -43,6 +43,10 @@ const STALE_AGE_MILLIS = 1000 * 3600 * 24 * 7;
 
 const REF_PARAM = "ref";
 const SERVICE_PARAM = "service";
+const TAG_PARAM = "tag";
+const RELEASE_TAGS = ["default", "biz", "staging", "pro"];
+const UNTAGGED = "untagged";
+const TAG_FILTERS = ["all", ...RELEASE_TAGS, UNTAGGED];
 
 function readRefFromUrl(): string {
   return new URLSearchParams(window.location.search).get(REF_PARAM) ?? "";
@@ -72,6 +76,23 @@ function writeServiceToUrl(service: string) {
     url.searchParams.delete(SERVICE_PARAM);
   } else {
     url.searchParams.set(SERVICE_PARAM, service);
+  }
+  if (url.toString() !== window.location.href) {
+    window.history.pushState(null, "", url);
+  }
+}
+
+function readTagFromUrl(): string {
+  const tag = new URLSearchParams(window.location.search).get(TAG_PARAM);
+  return tag && TAG_FILTERS.includes(tag) ? tag : "all";
+}
+
+function writeTagToUrl(tag: string) {
+  const url = new URL(window.location.href);
+  if (tag === "all") {
+    url.searchParams.delete(TAG_PARAM);
+  } else {
+    url.searchParams.set(TAG_PARAM, tag);
   }
   if (url.toString() !== window.location.href) {
     window.history.pushState(null, "", url);
@@ -129,7 +150,17 @@ function Ago({ d }: { d: Date }) {
   );
 }
 
-function ReleaseTagBadge({ tag }: { tag: string }) {
+function ReleaseTagBadge({ tag }: { tag: string | undefined }) {
+  if (tag === undefined) {
+    return (
+      <span
+        className="px-2 py-0.5 rounded-full text-xs font-medium italic text-gray-500 border border-dashed border-gray-300"
+        title="This push was recorded before release tags were tracked"
+      >
+        no tag
+      </span>
+    );
+  }
   const colorClasses: Record<string, string> = {
     default: "bg-blue-100 text-blue-800",
     biz: "bg-green-100 text-green-800",
@@ -152,7 +183,7 @@ function Row({
     version: string;
     url: string;
     service: string;
-    release_tag: string;
+    release_tag?: string;
     pushDate: number;
     _creationTime: number;
     is_stable: boolean;
@@ -278,6 +309,7 @@ function Row({
 
 function Rows() {
   const [value, setValue] = useState(readServiceFromUrl);
+  const [tag, setTag] = useState(readTagFromUrl);
   const [latestOnly, setLatestOnly] = useState(true);
   const displayLatestOnly = latestOnly && value === "all";
   const [gitShaToCheck, setGitShaToCheck] = useState(readRefFromUrl);
@@ -301,6 +333,7 @@ function Rows() {
     const onPopState = () => {
       setGitShaToCheck(readRefFromUrl());
       setValue(readServiceFromUrl());
+      setTag(readTagFromUrl());
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
@@ -341,11 +374,20 @@ function Rows() {
     loadMore,
   } = usePaginatedQuery(
     api.version_history.list,
-    { service: value === "all" ? undefined : value },
+    {
+      service: value === "all" ? undefined : value,
+      release_tag: tag === "all" ? undefined : tag === UNTAGGED ? null : tag,
+    },
     { initialNumItems: PAGE_SIZE },
   );
   const latestPushes = useQuery(api.version_history.listLatest) || [];
-  const pushes = displayLatestOnly ? latestPushes : messages;
+  const pushes = displayLatestOnly
+    ? latestPushes.filter(
+        (p) =>
+          tag === "all" ||
+          p.release_tag === (tag === UNTAGGED ? undefined : tag),
+      )
+    : messages;
 
   const handleInputChange: React.ChangeEventHandler<HTMLInputElement> = (
     event,
@@ -426,6 +468,44 @@ function Rows() {
           value={gitShaToCheck}
           placeholder="Paste git SHA or PR #/URL"
         />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+              {tag === "all" ? "All tags" : tag === UNTAGGED ? "No tag" : tag}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuRadioGroup
+              className="w-48"
+              value={tag}
+              onValueChange={(t) => {
+                setTag(t);
+                writeTagToUrl(t);
+              }}
+            >
+              {TAG_FILTERS.map((t) => (
+                <DropdownMenuRadioItem
+                  key={t}
+                  value={t}
+                  className="flex items-center justify-between px-2 cursor-pointer border-2 border-transparent hover:border-primary hover:border-solid"
+                >
+                  <span className="w-5 flex-shrink-0">
+                    <ItemIndicator>
+                      <CheckIcon />
+                    </ItemIndicator>
+                  </span>
+                  <span className="flex-grow">
+                    {t === "all" ? (
+                      "All tags"
+                    ) : (
+                      <ReleaseTagBadge tag={t === UNTAGGED ? undefined : t} />
+                    )}
+                  </span>
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
         {resolveError && (
           <p className="text-sm text-red-600">{resolveError}</p>
         )}

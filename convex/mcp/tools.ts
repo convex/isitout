@@ -26,7 +26,7 @@ const tool = createTool<Id<"users">>();
 const push = v.object({
   service: v.string(),
   version: v.string(),
-  releaseTag: v.string(),
+  releaseTag: v.optional(v.string()),
   pushedAt: v.string(),
   isStable: v.boolean(),
   url: v.string(),
@@ -99,7 +99,7 @@ export const tools: Record<string, ToolDefinition<any, any, Id<"users">>> = {
       services: v.array(
         v.object({
           service: v.string(),
-          releaseTag: v.string(),
+          releaseTag: v.optional(v.string()),
           version: v.string(),
           pushedAt: v.string(),
           status: v.union(
