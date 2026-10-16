@@ -239,13 +239,13 @@ function Row({
         <span>
           <a
             className="underline text-primary text-xs"
-            href={`https://github.com/get-convex/${gitRepository}/compare/${gitRefFor(service, prev)}...get-convex:${gitRepository}:${gitRefFor(service, version)}`}
+            href={`https://github.com/convex/${gitRepository}/compare/${gitRefFor(service, prev)}...convex:${gitRepository}:${gitRefFor(service, version)}`}
           >
             diff previous
           </a>{" "}
           <a
             className="underline text-primary text-xs"
-            href={`https://github.com/get-convex/${gitRepository}/compare/${gitRefFor(service, version)}...main`}
+            href={`https://github.com/convex/${gitRepository}/compare/${gitRefFor(service, version)}...main`}
           >
             diff main
           </a>
@@ -487,7 +487,7 @@ function Rows() {
                     {" "}
                     (
                     <a
-                      href={`https://github.com/get-convex/convex/pull/${linkedPrNumber}`}
+                      href={`https://github.com/convex/convex/pull/${linkedPrNumber}`}
                       target="_blank"
                       rel="noreferrer"
                       className="text-blue-600 hover:underline"
@@ -574,10 +574,10 @@ export default function App() {
       <Rows />
       <div>
         <a
-          href="https://github.com/get-convex/isitout"
+          href="https://github.com/convex/isitout"
           className="underline text-blue-800 visited:text-purple-800"
         >
-          https://github.com/get-convex/isitout
+          https://github.com/convex/isitout
         </a>
       </div>
     </main>

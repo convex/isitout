@@ -20,7 +20,7 @@ export const compareCommits = action({
       // Get the base commit. Then extract the git origin revid from the commit message.
       // It looks something like this GitOrigin-RevId: 2aa20649ba78df338cfae387a99f3e581f1d8e72
       const baseCommit = await octokit.repos.getCommit({
-        owner: "get-convex",
+        owner: "convex",
         repo: "convex-backend",
         ref: args.base,
       });
@@ -33,7 +33,7 @@ export const compareCommits = action({
       console.log(`${JSON.stringify(args)}`);
     }
     const comparison = await octokit.repos.compareCommits({
-      owner: "get-convex",
+      owner: "convex",
       repo: "convex",
       base: args.base,
       head: args.head,
@@ -44,7 +44,7 @@ export const compareCommits = action({
 
 async function fetchCommit(sha: string, prNumber?: number) {
   const { data } = await octokit.repos.getCommit({
-    owner: "get-convex",
+    owner: "convex",
     repo: "convex",
     ref: sha,
   });
@@ -75,10 +75,10 @@ export const resolveRef = action({
     const explicitPr = trimmed.match(/^#(\d+)$/);
     const bareDigits = /^\d{1,6}$/.test(trimmed) ? trimmed : null;
     const urlPr = trimmed.match(
-      /^https?:\/\/github\.com\/get-convex\/convex\/pull\/(\d+)(?:[/?#].*)?$/,
+      /^https?:\/\/github\.com\/(?:get-)?convex\/convex\/pull\/(\d+)(?:[/?#].*)?$/,
     );
     const graphitePr = trimmed.match(
-      /^https?:\/\/app\.graphite\.com\/github\/pr\/get-convex\/convex\/(\d+)(?:[/?#].*)?$/,
+      /^https?:\/\/app\.graphite\.com\/github\/pr\/(?:get-)?convex\/convex\/(\d+)(?:[/?#].*)?$/,
     );
     const prNumberStr =
       explicitPr?.[1] ?? urlPr?.[1] ?? graphitePr?.[1] ?? bareDigits;
@@ -86,7 +86,7 @@ export const resolveRef = action({
       const number = Number(prNumberStr);
       try {
         const pr = await octokit.pulls.get({
-          owner: "get-convex",
+          owner: "convex",
           repo: "convex",
           pull_number: number,
         });
@@ -100,7 +100,7 @@ export const resolveRef = action({
       } catch {
         return {
           kind: "error" as const,
-          message: `PR #${number} not found in get-convex/convex.`,
+          message: `PR #${number} not found in convex/convex.`,
         };
       }
     }
@@ -109,7 +109,7 @@ export const resolveRef = action({
     } catch {
       return {
         kind: "error" as const,
-        message: "Commit not found in get-convex/convex.",
+        message: "Commit not found in convex/convex.",
       };
     }
   },
@@ -119,7 +119,7 @@ export const getLatestConvexBackendRelease = internalAction({
   args: {},
   handler: async (_ctx, _args) => {
     const release = await octokit.repos.getLatestRelease({
-      owner: "get-convex",
+      owner: "convex",
       repo: "convex-backend",
     });
     return release.data.tag_name;
@@ -133,7 +133,7 @@ export const getLatestConvexBackendContainer = internalAction({
       await octokit.packages.getAllPackageVersionsForPackageOwnedByOrg({
         package_type: "container",
         package_name: "convex-backend",
-        org: "get-convex",
+        org: "convex",
         per_page: 100,
         page: 1,
       });
@@ -154,7 +154,7 @@ export const getLatestConvexBackendContainer = internalAction({
 
 async function getLatestTaggedRelease(repo: string, tagPrefix: string) {
   const { data } = await octokit.git.listMatchingRefs({
-    owner: "get-convex",
+    owner: "convex",
     repo,
     ref: `tags/${tagPrefix}/`,
   });

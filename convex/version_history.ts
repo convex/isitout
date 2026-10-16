@@ -104,25 +104,25 @@ function renderVersionHistoryRow(row: Doc<"version_history">) {
   let buildDate = 0;
 
   if (row.service == "local-dev") {
-    url = `https://github.com/get-convex/convex-backend/releases/tag/${row.version}`;
+    url = `https://github.com/convex/convex-backend/releases/tag/${row.version}`;
   } else if (row.service == "self-hosted") {
-    url = `https://github.com/get-convex/convex-backend/pkgs/container/convex-backend`;
+    url = `https://github.com/convex/convex-backend/pkgs/container/convex-backend`;
   } else if (row.service == "convex-js") {
     const [npmVersion] = row.version.split("-");
-    url = `https://github.com/get-convex/convex/releases/tag/npm/${encodeURIComponent(npmVersion)}`;
+    url = `https://github.com/convex/convex/releases/tag/npm/${encodeURIComponent(npmVersion)}`;
   } else if (row.service == "convex-py" || row.service == "convex-rs") {
     const [packageVersion] = row.version.split("-");
-    url = `https://github.com/get-convex/${row.service}/releases/tag/${row.service}/${encodeURIComponent(packageVersion)}`;
+    url = `https://github.com/convex/${row.service}/releases/tag/${row.service}/${encodeURIComponent(packageVersion)}`;
   } else if (UNTAGGED_SERVICES.has(row.service)) {
     const [datePart, sha] = row.version.split("-");
     buildDate = +moment(datePart).toDate();
-    url = `https://github.com/get-convex/convex/commit/${sha}`;
+    url = `https://github.com/convex/convex/commit/${sha}`;
   } else {
     const [datePart, rest] = row.version.split("-");
     if (rest) {
       buildDate = +moment(datePart).toDate();
     } else {
-      url = `https://github.com/get-convex/convex/commit/${row.version}`;
+      url = `https://github.com/convex/convex/commit/${row.version}`;
     }
   }
 
