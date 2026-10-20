@@ -1,6 +1,7 @@
 import moment from "moment";
 import { mutation, query, QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
+import { paginationOptsValidator } from "convex/server";
 import { Doc } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { UNTAGGED_SERVICES } from "../src/untagged_services";
@@ -77,9 +78,11 @@ const renderedVersionHistoryRow = v.object({
 });
 
 export const list = query({
-  args: { service: v.optional(v.string()) },
-  returns: v.array(renderedVersionHistoryRow),
-  handler: async (ctx, { service }) => {
+  args: {
+    service: v.optional(v.string()),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, { service, paginationOpts }) => {
     await checkIdentity(ctx);
     let queryResult;
     if (service) {
@@ -87,15 +90,17 @@ export const list = query({
         .query("version_history")
         .withIndex("by_service", (q) => q.eq("service", service))
         .order("desc")
-        .take(20);
+        .paginate(paginationOpts);
     } else {
       queryResult = await ctx.db
         .query("version_history")
         .order("desc")
-        .take(20);
+        .paginate(paginationOpts);
     }
-    const result = queryResult.map(renderVersionHistoryRow);
-    return result;
+    return {
+      ...queryResult,
+      page: queryResult.page.map(renderVersionHistoryRow),
+    };
   },
 });
 
