@@ -1,4 +1,9 @@
-import { useAction, useMutation, useQuery } from "convex/react";
+import {
+  useAction,
+  useMutation,
+  usePaginatedQuery,
+  useQuery,
+} from "convex/react";
 import { Id } from "../convex/_generated/dataModel";
 import { api } from "../convex/_generated/api";
 import { UNTAGGED_SERVICES } from "./untagged_services";
@@ -25,6 +30,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+
+const PAGE_SIZE = 20;
 
 // 7 days
 const STALE_AGE_MILLIS = 1000 * 3600 * 24 * 7;
@@ -352,10 +359,15 @@ function Rows() {
   }, [gitShaToCheck, resolveRef]);
   const effectiveSha = resolved?.sha ?? "";
   const serviceToLastPushed = useQuery(api.version_history.services) || [];
-  const messages =
-    useQuery(api.version_history.list, {
-      service: value === "all" ? undefined : value,
-    }) || [];
+  const {
+    results: messages,
+    status: messagesStatus,
+    loadMore,
+  } = usePaginatedQuery(
+    api.version_history.list,
+    { service: value === "all" ? undefined : value },
+    { initialNumItems: PAGE_SIZE },
+  );
   const latestPushes = useQuery(api.version_history.listLatest) || [];
   const pushes = displayLatestOnly ? latestPushes : messages;
 
@@ -511,11 +523,6 @@ function Rows() {
         </>
       )}
       <div>🥱 - It's been over a week</div>
-      {!displayLatestOnly && (
-        <p className="text-sm text-gray-500 ml-4 mt-2">
-          Note: Only the 20 most recently pushed versions are displayed.
-        </p>
-      )}
       <div className="flex flex-col p-4 divide-y gap-2">
         <div className="flex gap-2 items-center font-bold text-sm text-gray-600 pb-2">
           <div className="w-[10%]">Status</div>
@@ -547,6 +554,19 @@ function Rows() {
             gitShaToCheck={effectiveSha}
           />
         ))}
+        {!displayLatestOnly &&
+          (messagesStatus === "CanLoadMore" ||
+            messagesStatus === "LoadingMore") && (
+            <div className="flex justify-center pt-4">
+              <Button
+                variant="outline"
+                disabled={messagesStatus === "LoadingMore"}
+                onClick={() => loadMore(PAGE_SIZE)}
+              >
+                {messagesStatus === "LoadingMore" ? "Loading…" : "Load more"}
+              </Button>
+            </div>
+          )}
       </div>
     </div>
   );
