@@ -1,5 +1,5 @@
 {
-  "name": "convex-tutorial",
+  "name": "isitout",
   "version": "0.0.0",
   "scripts": {
     "dev": "npm-run-all dev:init --parallel dev:server dev:client",
