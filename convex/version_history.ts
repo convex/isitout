@@ -82,19 +82,6 @@ export const list = query({
     service: v.optional(v.string()),
     paginationOpts: paginationOptsValidator,
   },
-  returns: v.object({
-    page: v.array(renderedVersionHistoryRow),
-    isDone: v.boolean(),
-    continueCursor: v.string(),
-    splitCursor: v.optional(v.union(v.string(), v.null())),
-    pageStatus: v.optional(
-      v.union(
-        v.literal("SplitRecommended"),
-        v.literal("SplitRequired"),
-        v.null(),
-      ),
-    ),
-  }),
   handler: async (ctx, { service, paginationOpts }) => {
     await checkIdentity(ctx);
     let queryResult;
