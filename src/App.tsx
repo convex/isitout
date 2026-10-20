@@ -365,8 +365,9 @@ function Rows() {
     setGitShaToCheck(event.target.value);
   };
 
-  const anyStale = Object.values(serviceToLastPushed).some((lastPushed) =>
-    isStale(new Date(lastPushed)),
+  const anyStale = Object.entries(serviceToLastPushed).some(
+    ([service, lastPushed]) =>
+      (value === "all" || service === value) && isStale(new Date(lastPushed)),
   );
 
   return (
