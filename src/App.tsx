@@ -72,7 +72,7 @@ function writeServiceToUrl(service: string) {
     url.searchParams.set(SERVICE_PARAM, service);
   }
   if (url.toString() !== window.location.href) {
-    window.history.replaceState(null, "", url);
+    window.history.pushState(null, "", url);
   }
 }
 
@@ -319,9 +319,6 @@ function Rows() {
     return () => clearTimeout(t);
   }, [gitShaToCheck]);
   useEffect(() => {
-    writeServiceToUrl(value);
-  }, [value]);
-  useEffect(() => {
     const onPopState = () => {
       setGitShaToCheck(readRefFromUrl());
       setValue(readServiceFromUrl());
@@ -396,7 +393,10 @@ function Rows() {
             <DropdownMenuRadioGroup
               className="w-96"
               value={value}
-              onValueChange={setValue}
+              onValueChange={(service) => {
+                setValue(service);
+                writeServiceToUrl(service);
+              }}
             >
               <DropdownMenuRadioItem
                 className="flex items-center justify-between px-2 cursor-pointer border-2 border-transparent hover:border-primary hover:border-solid"
