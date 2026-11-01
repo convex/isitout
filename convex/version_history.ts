@@ -1,12 +1,12 @@
 import moment from "moment";
-import { mutation, query, QueryCtx } from "./_generated/server";
+import { env, mutation, query, QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
 import { Doc, Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { UNTAGGED_SERVICES } from "../src/untagged_services";
 
-const expectedSecret = process.env.ISITOUT_SECRET;
+const expectedSecret = env.ISITOUT_SECRET;
 
 export const addRow = mutation({
   args: {

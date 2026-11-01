@@ -1,9 +1,9 @@
 import { Octokit } from "@octokit/rest";
-import { action, internalAction } from "./_generated/server";
+import { action, env, internalAction } from "./_generated/server";
 import { v } from "convex/values";
 import { api, internal } from "./_generated/api";
 
-const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN2 });
+const octokit = new Octokit({ auth: env.GITHUB_TOKEN2 });
 
 export const compareCommits = action({
   args: {
@@ -231,7 +231,7 @@ export const trackConvexBackendRelease = internalAction({
     await ctx.runMutation(api.version_history.addRow, {
       version,
       service: "local-dev",
-      secret: process.env.ISITOUT_SECRET!,
+      secret: env.ISITOUT_SECRET,
     });
   },
 });
@@ -245,7 +245,7 @@ export const trackConvexJsRelease = internalAction({
     await ctx.runMutation(api.version_history.addRow, {
       version,
       service: "convex-js",
-      secret: process.env.ISITOUT_SECRET!,
+      secret: env.ISITOUT_SECRET,
     });
   },
 });
@@ -259,7 +259,7 @@ export const trackConvexPyRelease = internalAction({
     await ctx.runMutation(api.version_history.addRow, {
       version,
       service: "convex-py",
-      secret: process.env.ISITOUT_SECRET!,
+      secret: env.ISITOUT_SECRET,
     });
   },
 });
@@ -273,7 +273,7 @@ export const trackConvexRsRelease = internalAction({
     await ctx.runMutation(api.version_history.addRow, {
       version,
       service: "convex-rs",
-      secret: process.env.ISITOUT_SECRET!,
+      secret: env.ISITOUT_SECRET,
     });
   },
 });
@@ -287,7 +287,7 @@ export const trackConvexBackendContainer = internalAction({
     await ctx.runMutation(api.version_history.addRow, {
       version,
       service: "self-hosted",
-      secret: process.env.ISITOUT_SECRET!,
+      secret: env.ISITOUT_SECRET,
     });
   },
 });

@@ -1,8 +1,8 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { env, mutation, query } from "./_generated/server";
 import { checkIdentity } from "./version_history";
 
-const expectedSecret = process.env.ISITOUT_SECRET;
+const expectedSecret = env.ISITOUT_SECRET;
 
 export const update = mutation({
   args: { time: v.float64(), secret: v.string() },
