@@ -5,6 +5,7 @@ import { components, internal } from "../_generated/api";
 import { ActionCtx, env, internalQuery, QueryCtx } from "../_generated/server";
 import { Id } from "../_generated/dataModel";
 import { checkUserIsAllowed } from "../version_history";
+import { tools } from "./tools";
 
 // Annotated to break the type cycle through `internal.mcp.server`.
 export const mcp: McpServer<Id<"users">> = new McpServer(components.mcp, {
@@ -12,7 +13,11 @@ export const mcp: McpServer<Id<"users">> = new McpServer(components.mcp, {
   title: "isitout",
   version: "0.1.0",
   instructions:
-    "isitout tracks which version of each Convex service is deployed.",
+    "isitout tracks which version of each Convex service is deployed. " +
+    "Use list_services to see every service and what it's running, " +
+    "find_services_with_commit to check whether a commit or PR from " +
+    "convex/convex has been deployed, and get_push_history to see the " +
+    "recent deploys of one service.",
   consentUrl: `${env.SITE_URL}/mcp/connect`,
   // Only the standard OAuth redirect flow for now.
   deviceFlow: false,
@@ -20,7 +25,7 @@ export const mcp: McpServer<Id<"users">> = new McpServer(components.mcp, {
     "isitout:read":
       "See services, their push history and which commits are out",
   },
-  tools: {},
+  tools,
 });
 
 // Connections act as a user from the `users` table, and only @convex.dev
