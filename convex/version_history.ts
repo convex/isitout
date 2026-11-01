@@ -262,7 +262,9 @@ export const markReleaseStability = mutation({
 
     // Update stability for all matching releases
     for (const release of releases) {
-      await ctx.db.patch(release._id, { is_stable: args.is_stable });
+      await ctx.db.patch("version_history", release._id, {
+        is_stable: args.is_stable,
+      });
     }
   },
 });
@@ -276,7 +278,7 @@ export async function checkIdentity(ctx: QueryCtx) {
 }
 
 export async function checkUserIsAllowed(ctx: QueryCtx, userId: Id<"users">) {
-  const user = await ctx.db.get(userId);
+  const user = await ctx.db.get("users", userId);
   if (!user) {
     throw new Error("Unauthenticated call");
   }

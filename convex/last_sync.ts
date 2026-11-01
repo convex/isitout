@@ -13,7 +13,7 @@ export const update = mutation({
     }
     const lastSync = await db.query("last_sync").unique();
     if (lastSync) {
-      await db.patch(lastSync._id, rest);
+      await db.patch("last_sync", lastSync._id, rest);
     } else {
       await db.insert("last_sync", rest);
     }
