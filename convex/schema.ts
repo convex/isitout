@@ -10,8 +10,11 @@ export default defineSchema({
     release_tag: v.optional(v.string()),
     is_stable: v.optional(v.boolean()),
   })
+    // These two are queried newest first, which needs the `_creationTime` order.
+    // eslint-disable-next-line @convex-dev/no-duplicate-indexes
     .index("by_service", ["service"])
     .index("by_service_and_version", ["service", "version"])
+    // eslint-disable-next-line @convex-dev/no-duplicate-indexes
     .index("by_service_and_release_tag", ["service", "release_tag"])
     .index("by_service_release_tag_and_is_stable", [
       "service",
