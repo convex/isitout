@@ -20,7 +20,7 @@
     "@types/react": "^18.3.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
-    "convex": "^1.37.0",
+    "convex": "^1.49.0",
     "cookie": "^1.0.1",
     "date-fns": "^2.30.0",
     "moment": "^2.30.1",
