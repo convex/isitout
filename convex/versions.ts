@@ -1,4 +1,4 @@
-import { internalAction } from "./_generated/server";
+import { env, internalAction } from "./_generated/server";
 import { api } from "./_generated/api";
 
 export const fetchDeployedVersions = internalAction({
@@ -15,7 +15,7 @@ export const fetchDeployedVersions = internalAction({
       await ctx.runMutation(api.version_history.addRow, {
         version: rev,
         service,
-        secret: process.env.ISITOUT_SECRET!,
+        secret: env.ISITOUT_SECRET,
       });
     }
   },
