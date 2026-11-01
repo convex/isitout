@@ -33,3 +33,7 @@ history of each of our internal services.
    ```bash
    npm run dev
    ```
+
+## MCP server
+
+To use isitout from AI agents, see [isitout.vercel.app/mcp](https://isitout.vercel.app/mcp).

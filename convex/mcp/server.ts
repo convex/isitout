@@ -13,7 +13,7 @@ export const mcp: McpServer<Id<"users">> = new McpServer(components.mcp, {
   version: "0.1.0",
   instructions:
     "isitout tracks which version of each Convex service is deployed.",
-  consentUrl: `${env.SITE_URL}/connect`,
+  consentUrl: `${env.SITE_URL}/mcp/connect`,
   // Only the standard OAuth redirect flow for now.
   deviceFlow: false,
   scopes: {

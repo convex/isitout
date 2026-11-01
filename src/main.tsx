@@ -2,6 +2,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App";
+import { ConnectPage } from "./mcp/ConnectPage";
+import { McpPage } from "./mcp/McpPage";
 import {
   Authenticated,
   ConvexReactClient,
@@ -25,11 +27,27 @@ function LoginButton() {
         justifyContent: "center",
       }}
     >
-      <button className="LoginButton" onClick={() => signIn("google")}>
+      <button className="LoginButton" onClick={() =>
+          // Come back to the same page (e.g. an agent's consent page).
+          signIn("google", {
+            redirectTo: window.location.pathname + window.location.search,
+          })
+        }>
         Log in
       </button>
     </div>
   );
+}
+
+function Page() {
+  switch (window.location.pathname) {
+    case "/mcp/connect":
+      return <ConnectPage />;
+    case "/mcp":
+      return <McpPage />;
+    default:
+      return <App />;
+  }
 }
 
 const container = document.getElementById("root")!;
@@ -38,7 +56,7 @@ root.render(
   <StrictMode>
     <ConvexAuthProvider client={convex}>
       <Authenticated>
-        <App />
+        <Page />
       </Authenticated>
       <Unauthenticated>
         <LoginButton />
