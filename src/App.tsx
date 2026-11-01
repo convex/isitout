@@ -6,7 +6,12 @@ import {
 } from "convex/react";
 import { Id } from "../convex/_generated/dataModel";
 import { api } from "../convex/_generated/api";
-import { UNTAGGED_SERVICES } from "./untagged_services";
+import {
+  STANDALONE_PACKAGE_SERVICES,
+  comparisonBaseFor,
+  gitRefFor,
+  gitRepositoryFor,
+} from "./git_refs";
 import React, { useEffect, useState } from "react";
 import { formatRFC7231, formatDistanceToNowStrict } from "date-fns";
 
@@ -38,9 +43,6 @@ const STALE_AGE_MILLIS = 1000 * 3600 * 24 * 7;
 
 const REF_PARAM = "ref";
 const SERVICE_PARAM = "service";
-const STANDALONE_PACKAGE_SERVICES = new Set(["convex-py", "convex-rs"]);
-// Versioned by bare commit SHA, without a `<service>/<version>` git tag.
-const SHA_VERSIONED_SERVICES = new Set(["dashboard", "docs"]);
 
 function readRefFromUrl(): string {
   return new URLSearchParams(window.location.search).get(REF_PARAM) ?? "";
@@ -93,26 +95,6 @@ function PushTime({ d }: { d: Date }) {
 
 function isStale(d: Date): boolean {
   return Date.now() - d.valueOf() >= STALE_AGE_MILLIS;
-}
-
-function gitRefFor(service: string, version: string): string {
-  if (service === "convex-js") {
-    return `npm/${version.split("-")[0]}`;
-  }
-  if (STANDALONE_PACKAGE_SERVICES.has(service)) {
-    return `${service}/${version.split("-")[0]}`;
-  }
-  if (SHA_VERSIONED_SERVICES.has(service)) {
-    return version;
-  }
-  if (UNTAGGED_SERVICES.has(service)) {
-    return version.split("-").pop()!;
-  }
-  return `${service}/${version}`;
-}
-
-function gitRepositoryFor(service: string): string {
-  return STANDALONE_PACKAGE_SERVICES.has(service) ? service : "convex";
 }
 
 const PUSH_INSTRUCTIONS_PATHS: Record<string, string | null> = {
@@ -192,10 +174,7 @@ function Row({
 
   const service = message.service;
   const version = message.version;
-  const base =
-    service === "convex-js" || STANDALONE_PACKAGE_SERVICES.has(service)
-      ? gitRefFor(service, version)
-      : version.split("-").pop()!;
+  const base = comparisonBaseFor(service, version);
   const gitRepository = gitRepositoryFor(service);
   const pushInstructionsUrl = pushInstructionsUrlFor(service);
 

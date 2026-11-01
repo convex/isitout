@@ -2,7 +2,7 @@ import moment from "moment";
 import { mutation, query, QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
-import { Doc } from "./_generated/dataModel";
+import { Doc, Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { UNTAGGED_SERVICES } from "../src/untagged_services";
 
@@ -40,7 +40,7 @@ export const addRow = mutation({
   },
 });
 
-async function listServices(ctx: QueryCtx) {
+export async function listServices(ctx: QueryCtx) {
   const services: Record<string, number> = {};
   let doc = await ctx.db
     .query("version_history")
@@ -65,7 +65,7 @@ export const services = query({
   handler: listServices,
 });
 
-const renderedVersionHistoryRow = v.object({
+export const renderedVersionHistoryRow = v.object({
   _id: v.id("version_history"),
   _creationTime: v.number(),
   service: v.string(),
@@ -104,7 +104,7 @@ export const list = query({
   },
 });
 
-function renderVersionHistoryRow(row: Doc<"version_history">) {
+export function renderVersionHistoryRow(row: Doc<"version_history">) {
   let url = `https://go.cvx.is/github_release/${row.service}/${row.version}`;
   let buildDate = 0;
 
@@ -148,49 +148,52 @@ function renderVersionHistoryRow(row: Doc<"version_history">) {
 export const listLatest = query({
   args: {},
   returns: v.array(renderedVersionHistoryRow),
-  handler: async (ctx) => {
-    const services = await listServices(ctx);
-    const allowedTags = ["default", "biz"];
-    const results: ReturnType<typeof renderVersionHistoryRow>[] = [];
+  handler: listLatestPushes,
+});
 
-    for (const [service] of Object.entries(services)) {
-      let hasCurrentDefault = false;
+// The latest push of each service for the "default" and "biz" release tags.
+export async function listLatestPushes(ctx: QueryCtx) {
+  const services = await listServices(ctx);
+  const allowedTags = ["default", "biz"];
+  const results: ReturnType<typeof renderVersionHistoryRow>[] = [];
 
-      for (const tag of allowedTags) {
-        const row = await ctx.db
-          .query("version_history")
-          .withIndex("by_service_and_release_tag", (q) =>
-            q.eq("service", service).eq("release_tag", tag),
-          )
-          .order("desc")
-          .first();
-        if (row) {
-          results.push(renderVersionHistoryRow(row));
-          if (tag === "default") {
-            hasCurrentDefault = true;
-          }
-        }
-      }
-      // Only include legacy rows if no current "default" row exists
-      if (!hasCurrentDefault) {
-        const legacyRow = await ctx.db
-          .query("version_history")
-          .withIndex("by_service_and_release_tag", (q) =>
-            q.eq("service", service).eq("release_tag", undefined),
-          )
-          .order("desc")
-          .first();
-        if (legacyRow) {
-          results.push(renderVersionHistoryRow(legacyRow));
+  for (const [service] of Object.entries(services)) {
+    let hasCurrentDefault = false;
+
+    for (const tag of allowedTags) {
+      const row = await ctx.db
+        .query("version_history")
+        .withIndex("by_service_and_release_tag", (q) =>
+          q.eq("service", service).eq("release_tag", tag),
+        )
+        .order("desc")
+        .first();
+      if (row) {
+        results.push(renderVersionHistoryRow(row));
+        if (tag === "default") {
+          hasCurrentDefault = true;
         }
       }
     }
+    // Only include legacy rows if no current "default" row exists
+    if (!hasCurrentDefault) {
+      const legacyRow = await ctx.db
+        .query("version_history")
+        .withIndex("by_service_and_release_tag", (q) =>
+          q.eq("service", service).eq("release_tag", undefined),
+        )
+        .order("desc")
+        .first();
+      if (legacyRow) {
+        results.push(renderVersionHistoryRow(legacyRow));
+      }
+    }
+  }
 
-    // Sort by pushDate descending.
-    results.sort((a, b) => b.pushDate - a.pushDate);
-    return results;
-  },
-});
+  // Sort by pushDate descending.
+  results.sort((a, b) => b.pushDate - a.pushDate);
+  return results;
+}
 
 export const prevRev = query({
   args: {
@@ -269,6 +272,10 @@ export async function checkIdentity(ctx: QueryCtx) {
   if (!userId) {
     throw new Error("Unauthenticated call");
   }
+  await checkUserIsAllowed(ctx, userId);
+}
+
+export async function checkUserIsAllowed(ctx: QueryCtx, userId: Id<"users">) {
   const user = await ctx.db.get(userId);
   if (!user) {
     throw new Error("Unauthenticated call");
