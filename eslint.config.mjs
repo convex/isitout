@@ -7,7 +7,7 @@ export default defineConfig([
   { ignores: ["convex/_generated/**", "dist/**", ".context/**"] },
 
   {
-    files: ["**/*.ts"],
+    files: ["**/*.{ts,tsx}"],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
