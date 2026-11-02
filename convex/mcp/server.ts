@@ -52,7 +52,6 @@ export const {
   authorize,
   listConnections,
   revokeConnection,
-  createApiKey,
 } = mcp.api({
   // `ctx` is the query, mutation or action ctx of the function being called.
   getUserId: (ctx) => getAllowedUserId(ctx as QueryCtx | ActionCtx),

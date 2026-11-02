@@ -1,30 +1,12 @@
-import { useAction, useMutation, useQuery } from "convex/react";
-import { useState } from "react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { errorMessage } from "./errorMessage";
 
 const MCP_URL = `${import.meta.env.VITE_CONVEX_SITE_URL}/mcp`;
 
 export function McpPage() {
   const connections = useQuery(api.mcp.server.listConnections);
   const revokeConnection = useMutation(api.mcp.server.revokeConnection);
-  const createApiKey = useAction(api.mcp.server.createApiKey);
-  const [keyName, setKeyName] = useState("");
-  const [newKey, setNewKey] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const create = async () => {
-    setError(null);
-    try {
-      const { apiKey } = await createApiKey({ name: keyName || "API key" });
-      setNewKey(apiKey);
-      setKeyName("");
-    } catch (e) {
-      setError(errorMessage(e));
-    }
-  };
 
   return (
     <main className="flex flex-col w-[100vw] p-8 gap-6 items-center">
@@ -72,30 +54,6 @@ export function McpPage() {
                   </Button>
                 </div>
               ))}
-            </div>
-          )}
-        </section>
-        <section className="flex flex-col gap-2">
-          <h2 className="text-xl font-bold">API keys</h2>
-          <p>For CLI agents that can't sign in through the browser.</p>
-          <div className="flex gap-2">
-            <Input
-              placeholder="Key name (e.g. Claude Code on my laptop)"
-              value={keyName}
-              onChange={(e) => setKeyName(e.target.value)}
-            />
-            <Button onClick={() => void create()}>Create API key</Button>
-          </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          {newKey && (
-            <div className="flex flex-col gap-1">
-              <p className="text-sm">
-                Copy this key now, it won't be shown again:
-              </p>
-              <code className="bg-gray-100 rounded p-2 break-all text-sm">
-                claude mcp add --transport http isitout {MCP_URL} --header
-                "Authorization: Bearer {newKey}"
-              </code>
             </div>
           )}
         </section>
