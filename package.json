@@ -7,7 +7,8 @@
     "dev:server": "convex dev",
     "dev:client": "vite --open --clearScreen false",
     "dev:init": "convex dev --once",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "vitest run"
   },
   "dependencies": {
     "@auth/core": "^0.41.0",
@@ -34,15 +35,18 @@
   },
   "devDependencies": {
     "@convex-dev/eslint-plugin": "5.0.1",
+    "@edge-runtime/vm": "5.0.0",
     "@types/node": "24.19.2",
     "@types/react-dom": "18.3.7",
     "@vitejs/plugin-react": "6.1.2",
     "autoprefixer": "10.6.2",
+    "convex-test": "0.0.66",
     "eslint": "10.14.0",
     "npm-run-all2": "9.0.4",
     "postcss": "8.5.32",
     "tailwindcss": "3.4.19",
     "typescript-eslint": "8.72.1",
-    "vite": "8.3.5"
+    "vite": "8.3.5",
+    "vitest": "5.0.5"
   }
 }
