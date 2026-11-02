@@ -2,6 +2,7 @@ import { httpRouter } from "convex/server";
 import { auth } from "./auth";
 import { httpAction } from "./_generated/server";
 import { api } from "./_generated/api";
+import { mcp } from "./mcp/server";
 
 const http = httpRouter();
 
@@ -47,5 +48,6 @@ http.route({
 });
 
 auth.addHttpRoutes(http);
+mcp.registerRoutes(http);
 
 export default http;

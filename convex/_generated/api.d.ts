@@ -13,6 +13,7 @@ import type * as crons from "../crons.js";
 import type * as github from "../github.js";
 import type * as http from "../http.js";
 import type * as last_sync from "../last_sync.js";
+import type * as mcp_server from "../mcp/server.js";
 import type * as version_history from "../version_history.js";
 import type * as versions from "../versions.js";
 
@@ -28,6 +29,7 @@ declare const fullApi: ApiFromModules<{
   github: typeof github;
   http: typeof http;
   last_sync: typeof last_sync;
+  "mcp/server": typeof mcp_server;
   version_history: typeof version_history;
   versions: typeof versions;
 }>;
@@ -58,4 +60,6 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  mcp: import("@convex-dev/mcp/_generated/component.js").ComponentApi<"mcp">;
+};
