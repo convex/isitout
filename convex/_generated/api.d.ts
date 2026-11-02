@@ -14,6 +14,7 @@ import type * as github from "../github.js";
 import type * as http from "../http.js";
 import type * as last_sync from "../last_sync.js";
 import type * as mcp_server from "../mcp/server.js";
+import type * as mcp_tools from "../mcp/tools.js";
 import type * as version_history from "../version_history.js";
 import type * as versions from "../versions.js";
 
@@ -30,6 +31,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   last_sync: typeof last_sync;
   "mcp/server": typeof mcp_server;
+  "mcp/tools": typeof mcp_tools;
   version_history: typeof version_history;
   versions: typeof versions;
 }>;
