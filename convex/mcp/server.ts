@@ -59,5 +59,6 @@ export const {
   revokeConnection,
 } = mcp.api({
   // `ctx` is the query, mutation or action ctx of the function being called.
+  // TODO(nicolas) Fix the type in @convex-dev/mcp to avoid the cast here
   getUserId: (ctx) => getAllowedUserId(ctx as QueryCtx | ActionCtx),
 });
