@@ -14,6 +14,7 @@ export default defineSchema({
     // eslint-disable-next-line @convex-dev/no-duplicate-indexes
     .index("by_service", ["service"])
     .index("by_service_and_version", ["service", "version"])
+    .index("by_release_tag", ["release_tag"])
     // eslint-disable-next-line @convex-dev/no-duplicate-indexes
     .index("by_service_and_release_tag", ["service", "release_tag"])
     .index("by_service_release_tag_and_is_stable", [

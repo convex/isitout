@@ -70,7 +70,7 @@ export const renderedVersionHistoryRow = v.object({
   _creationTime: v.number(),
   service: v.string(),
   version: v.string(),
-  release_tag: v.string(),
+  release_tag: v.optional(v.string()),
   url: v.string(),
   buildDate: v.number(),
   pushDate: v.number(),
@@ -80,23 +80,32 @@ export const renderedVersionHistoryRow = v.object({
 export const list = query({
   args: {
     service: v.optional(v.string()),
+    // `null` selects rows written before release tags were recorded.
+    release_tag: v.optional(v.union(v.string(), v.null())),
     paginationOpts: paginationOptsValidator,
   },
-  handler: async (ctx, { service, paginationOpts }) => {
+  handler: async (ctx, { service, release_tag, paginationOpts }) => {
     await checkIdentity(ctx);
-    let queryResult;
-    if (service) {
-      queryResult = await ctx.db
-        .query("version_history")
-        .withIndex("by_service", (q) => q.eq("service", service))
-        .order("desc")
-        .paginate(paginationOpts);
+    let q;
+    if (release_tag === undefined) {
+      q = service
+        ? ctx.db
+            .query("version_history")
+            .withIndex("by_service", (q) => q.eq("service", service))
+        : ctx.db.query("version_history");
     } else {
-      queryResult = await ctx.db
-        .query("version_history")
-        .order("desc")
-        .paginate(paginationOpts);
+      const tag = release_tag ?? undefined;
+      q = service
+        ? ctx.db
+            .query("version_history")
+            .withIndex("by_service_and_release_tag", (q) =>
+              q.eq("service", service).eq("release_tag", tag),
+            )
+        : ctx.db
+            .query("version_history")
+            .withIndex("by_release_tag", (q) => q.eq("release_tag", tag));
     }
+    const queryResult = await q.order("desc").paginate(paginationOpts);
     return {
       ...queryResult,
       page: queryResult.page.map(renderVersionHistoryRow),
@@ -137,7 +146,7 @@ export function renderVersionHistoryRow(row: Doc<"version_history">) {
     _creationTime: row._creationTime,
     service: row.service,
     version: row.version,
-    release_tag: row.release_tag ?? "default",
+    release_tag: row.release_tag,
     url,
     buildDate,
     pushDate,
@@ -198,7 +207,7 @@ export async function listLatestPushes(ctx: QueryCtx) {
 export const prevRev = query({
   args: {
     service: v.string(),
-    release_tag: v.string(),
+    release_tag: v.optional(v.string()),
     _creationTime: v.number(),
   },
   handler: async (ctx, args) => {
