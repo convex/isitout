@@ -155,10 +155,38 @@ export function renderVersionHistoryRow(row: Doc<"version_history">) {
 }
 
 export const listLatest = query({
-  args: {},
+  args: {
+    // `null` selects rows written before release tags were recorded.
+    release_tag: v.optional(v.union(v.string(), v.null())),
+  },
   returns: v.array(renderedVersionHistoryRow),
-  handler: listLatestPushes,
+  handler: (ctx, { release_tag }) =>
+    release_tag === undefined
+      ? listLatestPushes(ctx)
+      : listLatestPushesForTag(ctx, release_tag ?? undefined),
 });
+
+async function listLatestPushesForTag(
+  ctx: QueryCtx,
+  tag: string | undefined,
+) {
+  const services = await listServices(ctx);
+  const rows = await Promise.all(
+    Object.keys(services).map((service) =>
+      ctx.db
+        .query("version_history")
+        .withIndex("by_service_and_release_tag", (q) =>
+          q.eq("service", service).eq("release_tag", tag),
+        )
+        .order("desc")
+        .first(),
+    ),
+  );
+  return rows
+    .filter((row) => row !== null)
+    .map(renderVersionHistoryRow)
+    .sort((a, b) => b.pushDate - a.pushDate);
+}
 
 // The latest push of each service for the "default" and "biz" release tags.
 export async function listLatestPushes(ctx: QueryCtx) {

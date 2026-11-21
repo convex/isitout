@@ -307,6 +307,17 @@ function Row({
   );
 }
 
+function EmptyState({ onClearFilters }: { onClearFilters: () => void }) {
+  return (
+    <div className="flex flex-col items-center gap-3 py-12 text-sm text-gray-600">
+      <p>No pushes match these filters.</p>
+      <Button variant="outline" onClick={onClearFilters}>
+        Clear filters
+      </Button>
+    </div>
+  );
+}
+
 function Rows() {
   const [value, setValue] = useState(readServiceFromUrl);
   const [tag, setTag] = useState(readTagFromUrl);
@@ -368,6 +379,8 @@ function Rows() {
   }, [gitShaToCheck, resolveRef]);
   const effectiveSha = resolved?.sha ?? "";
   const serviceToLastPushed = useQuery(api.version_history.services) || [];
+  const releaseTagArg =
+    tag === "all" ? undefined : tag === UNTAGGED ? null : tag;
   const {
     results: messages,
     status: messagesStatus,
@@ -376,18 +389,17 @@ function Rows() {
     api.version_history.list,
     {
       service: value === "all" ? undefined : value,
-      release_tag: tag === "all" ? undefined : tag === UNTAGGED ? null : tag,
+      release_tag: releaseTagArg,
     },
     { initialNumItems: PAGE_SIZE },
   );
-  const latestPushes = useQuery(api.version_history.listLatest) || [];
-  const pushes = displayLatestOnly
-    ? latestPushes.filter(
-        (p) =>
-          tag === "all" ||
-          p.release_tag === (tag === UNTAGGED ? undefined : tag),
-      )
-    : messages;
+  const latestPushesResult = useQuery(api.version_history.listLatest, {
+    release_tag: releaseTagArg,
+  });
+  const pushesLoading = displayLatestOnly
+    ? latestPushesResult === undefined
+    : messagesStatus === "LoadingFirstPage";
+  const pushes = displayLatestOnly ? (latestPushesResult ?? []) : messages;
 
   const handleInputChange: React.ChangeEventHandler<HTMLInputElement> = (
     event,
@@ -613,6 +625,16 @@ function Rows() {
             gitShaToCheck={effectiveSha}
           />
         ))}
+        {!pushesLoading && pushes.length === 0 && (
+          <EmptyState
+            onClearFilters={() => {
+              setValue("all");
+              writeServiceToUrl("all");
+              setTag("all");
+              writeTagToUrl("all");
+            }}
+          />
+        )}
         {!displayLatestOnly &&
           (messagesStatus === "CanLoadMore" ||
             messagesStatus === "LoadingMore") && (
